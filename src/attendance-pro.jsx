@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 /* ─── Constants ────────────────────────────────────────────────────────────── */
 const USERS = [
-  { id: "T001", name: "Dr. Adebayo",   role: "teacher", email: "adebayo@school.edu",  password: "teacher123", avatar: "DA" },
+  { id: "T001", name: "Prof. Rashidat",   role: "teacher", email: "rashidat@school.edu",  password: "teacher123", avatar: "DA" },
   { id: "T002", name: "Prof. Okonkwo", role: "teacher", email: "okonkwo@school.edu",  password: "teacher123", avatar: "PO" },
   { id: "S001", name: "Amara Okafor",  role: "student", email: "amara@school.edu",    password: "student123", avatar: "AO", studentId: "STU001" },
   { id: "S002", name: "Chidi Nwosu",   role: "student", email: "chidi@school.edu",    password: "student123", avatar: "CN", studentId: "STU002" },
