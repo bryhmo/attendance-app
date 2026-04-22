@@ -649,10 +649,45 @@ function Reports({ sessions }) {
 }
 
 /* ─── App Shell ──────────────────────────────────────────────────────────────── */
+/* Shared session storage — persists across tabs/devices via localStorage */
+const STORAGE_KEY = "attendqr_sessions";
+function loadSessions() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+  catch(_) { return {}; }
+}
+function saveSessions(s) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch(_) {}
+}
+
 export default function App() {
   const [user,     setUser]     = useState(null);
-  const [sessions, setSessions] = useState({});
+  const [sessions, setSessions] = useState(loadSessions);
   const [tab,      setTab]      = useState("main");
+
+  // Write to localStorage on every change so other tabs pick it up
+  useEffect(() => { saveSessions(sessions); }, [sessions]);
+
+  // React to changes made in other tabs (teacher tab <-> student tab)
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key === STORAGE_KEY) {
+        try { setSessions(JSON.parse(e.newValue || "{}")); } catch(_) {}
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  // Poll every 2 s as a safety net for same-tab scenarios and mobile browsers
+  useEffect(() => {
+    const id = setInterval(() => {
+      setSessions(prev => {
+        const fresh = loadSessions();
+        return JSON.stringify(prev) !== JSON.stringify(fresh) ? fresh : prev;
+      });
+    }, 2000);
+    return () => clearInterval(id);
+  }, []);
 
   const createSession = (cid, dur) => setSessions(s => ({
     ...s, [cid]:{ token:genToken(cid), classId:cid, duration:dur, active:true, scanned:[], createdAt:new Date().toISOString() }
