@@ -192,6 +192,18 @@ function CameraScanner({ onDetected, onClose }) {
 
   // Try to load jsQR from CDN
   useEffect(() => {
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        streamRef.current = stream;
+        if (videoRef.current) { videoRef.current.srcObject = stream; videoRef.current.play(); }
+        setStatus("Point camera at QR code…");
+        scan();
+      } catch(e) {
+        setError("Camera access denied. Please allow camera permission and try again.");
+      }
+    };
+
     if (!window.jsQR) {
       const s = document.createElement("script");
       s.src = "https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js";
@@ -200,19 +212,8 @@ function CameraScanner({ onDetected, onClose }) {
       document.head.appendChild(s);
     } else { startCamera(); }
     return () => { stopCamera(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-      streamRef.current = stream;
-      if (videoRef.current) { videoRef.current.srcObject = stream; videoRef.current.play(); }
-      setStatus("Point camera at QR code…");
-      scan();
-    } catch(e) {
-      setError("Camera access denied. Please allow camera permission and try again.");
-    }
-  };
 
   const stopCamera = () => {
     cancelAnimationFrame(rafRef.current);
@@ -349,6 +350,7 @@ function ActiveSession({ session, onEnd }) {
   useEffect(()=>{
     const id=setInterval(()=>setT(x=>{ if(x<=1){clearInterval(id);onEnd();return 0;} return x-1; }),1000);
     return ()=>clearInterval(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
 
   return (
